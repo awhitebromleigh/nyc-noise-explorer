@@ -20,14 +20,22 @@ import pydeck as pdk
 # Configure the Streamlit page view
 st.set_page_config(page_title="NYC Holiday Noise Explorer", layout="wide")
 
-@st.cache_data
+@st.cache_data #Loads this as cache data
+#Every time you move the slide the app would have to re-open without it
 def load_data():
     """Loads and preprocesses the NYC Noise Complaints dataset."""
     df = pd.read_csv("311_Noise_Complaints_20260403.csv", low_memory=False)
-    
-    # [PY6 - Lambda] Use a lambda function to parse 'Created Date' into datetime objects
-    df['Created Date'] = df['Created Date'].apply(lambda x: pd.to_datetime(x, errors='coerce'))
-    
+    #low memory =false 
+    #tells Pandas to read the entire file at once 
+    # to correctly guess the data types of each column.
+
+    # [PY6 - Lambda] Use a lambda function to parse 'Created Date' in csv into datetime objects
+    df['Created Date'] = df['Created Date'].apply(lambda x: pd.to_datetime(x, errors='coerce')) 
+    #coerce means "If you can't figure out the date, just turn it into NaT (Not a Time)."
+    #LAMBDA EXPLANATION: The .apply() method goes through every single row in the 'Created Date' column. 
+    #The lambda x: says "take the current row's value, call it x, and run it through 
+    # pd.to_datetime(x)."
+
     # Filter for the loudest week of the year (Dec 24 2025 - Jan 2 2026)
     start_date = pd.to_datetime('2025-12-24')
     end_date = pd.to_datetime('2026-01-02')
@@ -46,7 +54,7 @@ def generate_borough_summary(filtered_df, target_boroughs):
     borough_counts = {}
     total_complaints = 0
     
-    # [PY4 - IterLoop] A for-loop iterating over the selected boroughs
+ # [PY4 - IterLoop] A for-loop iterating over the selected boroughs
     for borough in target_boroughs:
         # Count how many complaints match the current borough
         b_count = len(filtered_df[filtered_df['Borough'] == borough])
@@ -164,7 +172,7 @@ r = pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
     tooltip={
-        "text": "Address: {Incident Address}\nComplaint: {Problem Detail (formerly Descriptor)}"
+        "text": "Address: {Incident Address}\nComplaint: {Problem Detail}"
     }
 )
 
