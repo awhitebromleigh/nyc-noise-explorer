@@ -131,7 +131,7 @@ st.header("📊 Complaint Type Analysis")
 pivot_df = pd.pivot_table(
     df_borough, 
     values='Unique Key', 
-    index='Problem Detail (formerly Descriptor)', 
+    index='Problem Detail',
     columns='Borough', 
     aggfunc='count', 
     fill_value=0
