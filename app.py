@@ -131,7 +131,7 @@ st.header("📊 Complaint Type Analysis")
 pivot_df = pd.pivot_table(
     df_borough, 
     values='Unique Key', 
-    index='Problem Detail',
+    index='Problem Detail (formerly Descriptor)', 
     columns='Borough', 
     aggfunc='count', 
     fill_value=0
@@ -172,7 +172,7 @@ r = pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
     tooltip={
-        "text": "Address: {Incident Address}\nComplaint: {Problem Detail}"
+        "text": "Address: {Incident Address}\nComplaint: {Problem Detail (formerly descriptor)}"
     }
 )
 
