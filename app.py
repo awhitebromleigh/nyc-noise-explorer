@@ -82,7 +82,7 @@ date_range = st.sidebar.slider(
 # Filter the dataframe based on the slider input
 df_filtered = df[(df['Created Date'].dt.date >= date_range[0]) & (df['Created Date'].dt.date <= date_range[1])]
 
-# [PY3 - ListComp] Clean up the borough list to remove 'Unspecified' entries
+# [PY3 - ListComp] clean up the borough list to remove Unspecified entries
 raw_boroughs = df['Borough'].dropna().unique()
 valid_boroughs = [b for b in raw_boroughs if b != "Unspecified"]
 
@@ -93,7 +93,7 @@ selected_boroughs = st.sidebar.multiselect("Select Boroughs to Compare:", valid_
 top_n = st.sidebar.number_input("Top 'N' Complaint Types to Display", min_value=1, max_value=20, value=5)
 
 
-# --- MAIN PAGE DASHBOARD ---
+#Main page dashboard
 st.title("🗽 NYC Holiday Noise Explorer")
 st.write("Analyze NYC noise complaints recorded from Christmas Eve through New Year’s Day to discover where the loudest complaints come from.")
 
@@ -137,7 +137,7 @@ st.write(f"**Top {top_n} Complaint Types by Borough:**")
 st.dataframe(top_complaints)
 
 
-# --- 4. Geospatial Heatmap ---
+# 4. Geospatial Heatmap
 st.header("🗺️ Geospatial Heatmap: Where were the parties?")
 st.write("Explore specific locations of noise complaints. Hover over the markers to view details.")
 
