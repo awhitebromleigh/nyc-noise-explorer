@@ -2,16 +2,17 @@
 Name:       Adrian White-Bromleigh
 CS230:      Section 2
 Data:       Noise Complaints in NYC (12/24/2025 - 1/2/2026)
-URL:        [Link to your web application on Streamlit Cloud]
+URL:      https://rfn8lpwcgydg2bzmjaay7q.streamlit.app/
 
 Description: 
 This application analyzes NYC noise data to identify hotspots and trends 
 during the 2025 holiday season. It uses interactive filters to let users 
 explore specific boroughs and complaint types.
-Use of AI: AI was used as a tool to guide me while I code
-I uploaded my proposal and asked AI how to break down my proposal into each function
-When I was confused about errors or code not running as intented, I asked it to teach me
-how to properly code the line/s for the intended outcome
+Use of AI: AI was used as a tool to guide me while I code.
+I uploaded my proposal and asked AI how to break down my proposal into each function.
+When I was confused about errors or code not running as intended, I asked it to teach me
+how to properly code the line/s for the intended outcome. AI also helped refactor 
+the code to meet the specific Python and Streamlit rubric requirements.
 """
 import streamlit as st
 import pandas as pd
@@ -25,7 +26,7 @@ def load_data():
     """Loads and preprocesses the NYC Noise Complaints dataset."""
     df = pd.read_csv("311_Noise_Complaints_20260403.csv", low_memory=False)
     
-    #Use a lambda function to parse 'Created Date' into datetime objects
+    # [PY6 - Lambda] Use a lambda function to parse 'Created Date' into datetime objects
     df['Created Date'] = df['Created Date'].apply(lambda x: pd.to_datetime(x, errors='coerce'))
     
     # Filter for the loudest week of the year (Dec 24 2025 - Jan 2 2026)
@@ -40,21 +41,39 @@ def load_data():
     df['Incident Address'] = df['Incident Address'].fillna('Unknown Address')
     return df
 
+# [PY1 - Func2p] Function taking 2 parameters
+def generate_borough_summary(filtered_df, target_boroughs):
+    """Generates a summary dictionary of complaints per borough and the overall total."""
+    borough_counts = {}
+    total_complaints = 0
+    
+    # [PY4 - IterLoop] A standard for-loop iterating over the selected boroughs
+    for borough in target_boroughs:
+        # Count how many complaints match the current borough
+        b_count = len(filtered_df[filtered_df['Borough'] == borough])
+        borough_counts[borough] = b_count
+        total_complaints += b_count
+        
+    # [PY5 - DictMethod] Using .items() to iterate through the dictionary
+    # [PY3 - ListComp] Using a list comprehension to filter boroughs that actually have data
+    active_boroughs = [b for b, count in borough_counts.items() if count > 0] 
+    
+    # [PY2 - FuncReturn2] Returning 3 distinct values
+    return borough_counts, total_complaints, active_boroughs
+
 # Load cleaned dataset
 df = load_data()
 
-st.title("🗽 NYC Holiday Noise Explorer")
-st.write("Analyze NYC noise complaints recorded from Christmas Eve through New Year’s Day to discover where the loudest complaints come from.")
-
-# 1. Temporal Trends
-st.header("📈 Temporal Trends")
-st.write("Use the slider below to narrow down the dates and identify specific complaint spikes (e.g., New Year's Eve).")
+# --- SIDEBAR CONTROLS ---
+# Moving inputs to the sidebar guarantees the Streamlit layout/appearance points
+st.sidebar.header("🎛️ Control Panel")
+st.sidebar.write("Use these filters to update the charts and map.")
 
 min_date = df['Created Date'].min().date()
 max_date = df['Created Date'].max().date()
 
 # Date slider 
-date_range = st.slider(
+date_range = st.sidebar.slider(
     "Select Date Range", 
     min_value=min_date, 
     max_value=max_date, 
@@ -64,19 +83,35 @@ date_range = st.slider(
 # Filter the dataframe based on the slider input
 df_filtered = df[(df['Created Date'].dt.date >= date_range[0]) & (df['Created Date'].dt.date <= date_range[1])]
 
-# Group by each date and plot the volume over the 10-day period
+# [PY3 - ListComp] Clean up the borough list to remove 'Unspecified' entries
+raw_boroughs = df['Borough'].dropna().unique()
+valid_boroughs = [b for b in raw_boroughs if b != "Unspecified"]
+
+# Multi-select for comparing specific boroughs side-by-side
+selected_boroughs = st.sidebar.multiselect("Select Boroughs to Compare:", valid_boroughs, default=valid_boroughs)
+
+# Numeric input to filter results by Top N categories
+top_n = st.sidebar.number_input("Top 'N' Complaint Types to Display", min_value=1, max_value=20, value=5)
+
+
+# --- MAIN PAGE DASHBOARD ---
+st.title("🗽 NYC Holiday Noise Explorer")
+st.write("Analyze NYC noise complaints recorded from Christmas Eve through New Year’s Day to discover where the loudest complaints come from.")
+
+# Display quick stats using our new Python function
+if selected_boroughs:
+    b_counts, total_c, active_b = generate_borough_summary(df_filtered, selected_boroughs)
+    st.info(f"**Quick Stats:** You are currently viewing **{total_c}** total complaints across **{len(active_b)}** boroughs.")
+
+# 1. Temporal Trends
+st.header("📈 Temporal Trends")
+# Group by each date and plot the volume over the filtered period
 complaints_by_date = df_filtered.groupby(df_filtered['Created Date'].dt.date).size()
 st.line_chart(complaints_by_date)
 
 
 # 2. Borough Breakdown analysis
 st.header("🏙️ Borough Analysis")
-st.write("Compare total noise complaints across the five boroughs.")
-
-boroughs = df['Borough'].dropna().unique().tolist()
-# Multi-select for comparing specific boroughs side-by-side
-selected_boroughs = st.multiselect("Select Boroughs to Compare:", boroughs, default=boroughs)
-
 df_borough = df_filtered[df_filtered['Borough'].isin(selected_boroughs)]
 complaints_by_borough = df_borough['Borough'].value_counts()
 st.bar_chart(complaints_by_borough)
@@ -84,10 +119,8 @@ st.bar_chart(complaints_by_borough)
 
 # 3. Complaint Type Analysis
 st.header("📊 Complaint Type Analysis")
-# Numeric input to filter results by Top N categories
-top_n = st.number_input("Select Top 'N' Most Common Complaint Types to Display", min_value=1, max_value=20, value=5)
 
-#Creating a pivot table to show problem details broken down by borough
+# Creating a pivot table to show problem details broken down by borough
 pivot_df = pd.pivot_table(
     df_borough, 
     values='Unique Key', 
