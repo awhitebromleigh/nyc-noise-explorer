@@ -145,14 +145,21 @@ st.write(f"**Top {top_n} Complaint Types by Borough:**")
 st.dataframe(top_complaints)
 
 
-# 4. Geospatial Heatmap
+# --- 4. Geospatial Heatmap ---
 st.header("🗺️ Geospatial Heatmap: Where were the parties?")
 st.write("Explore specific locations of noise complaints. Hover over the markers to view details.")
 
-# Configure the PyDeck Layer
+
+# Create a specific 'map_df' with simplified column names.
+map_df = df_borough.rename(columns={
+    'Incident Address': 'address',
+    'Problem Detail (formerly Descriptor)': 'details'
+})
+
+# Configure the PyDeck Layer - Use 'map_df' now
 layer = pdk.Layer(
     "ScatterplotLayer",
-    df_borough,
+    map_df,
     get_position=['Longitude', 'Latitude'],
     get_color='[200, 30, 0, 160]',
     get_radius=60,
@@ -167,12 +174,12 @@ view_state = pdk.ViewState(
     pitch=30
 )
 
-# Build the Map and include a tooltip to show the exact addresses and details
+# Build the Map - Now using the simplified keys {address} and {details}
 r = pdk.Deck(
     layers=[layer],
     initial_view_state=view_state,
     tooltip={
-        "text": "Address: {Incident Address}\nComplaint: {Problem Detail (formerly descriptor)}"
+        "text": "Address: {address}\nComplaint: {details}"
     }
 )
 
