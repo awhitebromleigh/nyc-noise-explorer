@@ -11,8 +11,7 @@ explore specific boroughs and complaint types.
 Use of AI: AI was used as a tool to guide me while I code.
 I uploaded my proposal and asked AI how to break down my proposal into each function.
 When I was confused about errors or code not running as intended, I asked it to teach me
-how to properly code the line/s for the intended outcome. AI also helped refactor 
-the code to meet the specific Python and Streamlit rubric requirements.
+how to properly code the line/s for the intended outcome.
 """
 import streamlit as st
 import pandas as pd
@@ -47,7 +46,7 @@ def generate_borough_summary(filtered_df, target_boroughs):
     borough_counts = {}
     total_complaints = 0
     
-    # [PY4 - IterLoop] A standard for-loop iterating over the selected boroughs
+    # [PY4 - IterLoop] A for-loop iterating over the selected boroughs
     for borough in target_boroughs:
         # Count how many complaints match the current borough
         b_count = len(filtered_df[filtered_df['Borough'] == borough])
@@ -64,7 +63,7 @@ def generate_borough_summary(filtered_df, target_boroughs):
 # Load cleaned dataset
 df = load_data()
 
-# --- SIDEBAR CONTROLS ---
+#SIDEBAR CONTROLS
 # Moving inputs to the sidebar guarantees the Streamlit layout/appearance points
 st.sidebar.header("🎛️ Control Panel")
 st.sidebar.write("Use these filters to update the charts and map.")
